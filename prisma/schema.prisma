@@ -1,0 +1,124 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Brand {
+  id             String       @id @default(uuid())
+  name           String
+  description    String?      @db.Text
+  targetAudience String?      @map("target_audience") @db.Text
+  toneOfVoice    String?      @map("tone_of_voice")
+  productInfo    String?      @map("product_info") @db.Text
+  industry       String?
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+  competitors    Competitor[]
+
+  @@map("brands")
+}
+
+model Competitor {
+  id           String   @id @default(uuid())
+  brandId      String   @map("brand_id")
+  name         String
+  adLibraryUrl String   @map("ad_library_url")
+  pageId       String?  @map("page_id")
+  isActive     Boolean  @default(true) @map("is_active")
+  lastFetched  DateTime? @map("last_fetched")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+  brand        Brand    @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  ads          Ad[]
+
+  @@map("competitors")
+}
+
+model Ad {
+  id              String     @id @default(uuid())
+  competitorId    String     @map("competitor_id")
+  adLibraryId     String     @map("ad_library_id")
+  impressionRange String?    @map("impression_range")
+  startDate       DateTime?  @map("start_date")
+  mediaUrl        String?    @map("media_url") @db.Text
+  mediaType       String?    @map("media_type")
+  thumbnailUrl    String?    @map("thumbnail_url") @db.Text
+  adCopy          String?    @map("ad_copy") @db.Text
+  headline        String?
+  cta             String?
+  landingPage     String?    @map("landing_page") @db.Text
+  status          String     @default("active")
+  driveFileId     String?    @map("drive_file_id")
+  driveFolderId   String?    @map("drive_folder_id")
+  createdAt       DateTime   @default(now()) @map("created_at")
+  updatedAt       DateTime   @updatedAt @map("updated_at")
+  competitor      Competitor @relation(fields: [competitorId], references: [id], onDelete: Cascade)
+  analyses        Analysis[]
+
+  @@unique([competitorId, adLibraryId])
+  @@map("ads")
+}
+
+model Analysis {
+  id             String   @id @default(uuid())
+  adId           String   @map("ad_id")
+  framework      String?  @db.Text
+  hooks          String?  @db.Text
+  concepts       String?  @db.Text
+  scripts        String?  @db.Text
+  targetAudience String?  @map("target_audience") @db.Text
+  emotionalTriggers String? @map("emotional_triggers") @db.Text
+  repurposedIdea String?  @map("repurposed_idea") @db.Text
+  strengthsWeaknesses String? @map("strengths_weaknesses") @db.Text
+  rawResponse    Json?    @map("raw_response")
+  driveFileId    String?  @map("drive_file_id")
+  createdAt      DateTime @default(now()) @map("created_at")
+  ad             Ad       @relation(fields: [adId], references: [id], onDelete: Cascade)
+
+  @@map("analyses")
+}
+
+model DriveFolder {
+  id         String   @id @default(uuid())
+  folderId   String   @unique @map("folder_id")
+  folderName String   @map("folder_name")
+  folderType String   @map("folder_type")
+  parentId   String?  @map("parent_id")
+  entityId   String?  @map("entity_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@map("drive_folders")
+}
+
+model Settings {
+  id                  String   @id @default(uuid())
+  googleDriveRootId   String?  @map("google_drive_root_id")
+  googleRefreshToken  String?  @map("google_refresh_token") @db.Text
+  slackWebhookUrl     String?  @map("slack_webhook_url") @db.Text
+  autoFetchEnabled    Boolean  @default(false) @map("auto_fetch_enabled")
+  autoFetchInterval   Int      @default(24) @map("auto_fetch_interval")
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  @@map("settings")
+}
+
+model Job {
+  id          String   @id @default(uuid())
+  type        String
+  payload     Json
+  status      String   @default("pending")
+  attempts    Int      @default(0)
+  lastError   String?  @db.Text
+  runAt       DateTime @default(now()) @map("run_at")
+  completedAt DateTime? @map("completed_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([status, runAt])
+  @@map("jobs")
+}
