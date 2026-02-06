@@ -1,7 +1,7 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
-import { HardDrive, Settings } from 'lucide-react'
+import { HardDrive } from 'lucide-react'
 
 interface HeaderProps {
   driveConnected: boolean
@@ -10,11 +10,11 @@ interface HeaderProps {
 
 export function Header({ driveConnected, onConnectDrive }: HeaderProps) {
   return (
-    <header className="border-b bg-white">
+    <header className="border-b bg-background">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">
+            <h1 className="text-2xl font-bold text-foreground">
               Competitor Ad Analyzer
             </h1>
             <p className="text-sm text-muted-foreground">
@@ -29,9 +29,6 @@ export function Header({ driveConnected, onConnectDrive }: HeaderProps) {
             >
               <HardDrive className="h-4 w-4 mr-2" />
               {driveConnected ? 'Drive Connected' : 'Connect Google Drive'}
-            </Button>
-            <Button variant="ghost" size="icon">
-              <Settings className="h-5 w-5" />
             </Button>
           </div>
         </div>
